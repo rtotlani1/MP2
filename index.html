@@ -12,10 +12,12 @@
     <p class="site-header__eyebrow">Step-by-step nutrition planning</p>
     <h1 class="site-header__title">Fuel Ledger</h1>
     <p class="site-header__tagline">Figure out what to eat for your goal, without redoing the math by hand every time something changes.</p>
+    <button type="button" class="btn btn--ghost site-header__reset" id="reset-btn">Reset everything</button>
   </header>
 
   <main>
 
+    <!-- ===================== STEP 1 — PROFILE ===================== -->
     <section class="step" id="step-profile" aria-labelledby="step-profile-heading">
       <p class="step__eyebrow">Step 1 of 4</p>
       <h2 id="step-profile-heading" class="step__heading">Your profile</h2>
@@ -28,7 +30,7 @@
           <div class="field field--weight">
             <label for="weight-input">Weight</label>
             <input type="number" id="weight-input" name="weight" min="1" step="0.1" inputmode="decimal" required>
-            <fieldset class="unit-toggle">
+            <fieldset class="unit-toggle" id="weight-unit-toggle">
               <legend class="sr-only">Weight unit</legend>
               <button type="button" class="unit-toggle__btn is-active" data-unit="kg" aria-pressed="true">kg</button>
               <button type="button" class="unit-toggle__btn" data-unit="lb" aria-pressed="false">lb</button>
@@ -78,13 +80,12 @@
 
         <div class="step__actions">
           <button type="submit" class="btn btn--primary">Calculate maintenance calories</button>
-          <button type="button" class="btn btn--ghost" id="reset-btn">Reset</button>
         </div>
       </form>
     </section>
 
     <section class="result-card" id="result-card" hidden aria-live="polite">
-      <p class="result-card__title">Nutrition Facts — Maintenance</p>
+      <h3 class="result-card__title">Nutrition Facts — Maintenance</h3>
 
       <dl class="result-list">
         <dt>Maintenance Calories</dt>
@@ -103,32 +104,92 @@
       <p class="result-footnote" id="result-explanation"></p>
     </section>
 
-    <section class="locked-step" aria-disabled="true">
+    <!-- ===================== STEP 2 — GOAL ===================== -->
+    <section class="step" id="step-goal" aria-labelledby="step-goal-heading" hidden>
       <p class="step__eyebrow">Step 2 of 4</p>
-      <h2 class="step__heading">Your goal</h2>
-      <p class="locked-step__note">Target weight, timeframe, and bulk/cut — coming in the next iteration.</p>
+      <h2 id="step-goal-heading" class="step__heading">Your goal</h2>
+      <p class="step__intro">Tell us where you want to end up and by when, and we'll work out what that takes.</p>
+
+      <form id="goal-form" novalidate>
+        <fieldset class="field-grid">
+          <legend class="sr-only">Your goal details</legend>
+
+          <div class="field">
+            <fieldset class="unit-toggle" id="goal-type-toggle">
+              <legend class="field__legend">Goal type</legend>
+              <button type="button" class="unit-toggle__btn is-active" data-goal="cut" aria-pressed="true">Cut</button>
+              <button type="button" class="unit-toggle__btn" data-goal="bulk" aria-pressed="false">Bulk</button>
+            </fieldset>
+          </div>
+
+          <div class="field">
+            <label for="target-weight-input">Target weight (<span id="target-weight-unit">kg</span>)</label>
+            <input type="number" id="target-weight-input" name="targetWeight" min="1" step="0.1" inputmode="decimal" required>
+          </div>
+
+          <div class="field">
+            <label for="timeframe-input">Timeframe (weeks)</label>
+            <input type="number" id="timeframe-input" name="timeframe" min="1" max="104" step="1" inputmode="numeric" required>
+          </div>
+        </fieldset>
+
+        <p class="form-error" id="goal-error" role="alert" hidden></p>
+
+        <div class="step__actions">
+          <button type="submit" class="btn btn--primary">Build my plan</button>
+        </div>
+      </form>
     </section>
 
-    <section class="locked-step" aria-disabled="true">
+    <!-- ===================== STEP 3 — PLAN OPTIONS ===================== -->
+    <section class="step" id="step-plans" aria-labelledby="step-plans-heading" hidden>
       <p class="step__eyebrow">Step 3 of 4</p>
-      <h2 class="step__heading">Plan options</h2>
-      <p class="locked-step__note">Conservative / moderate / aggressive comparison goes here.</p>
+      <h2 id="step-plans-heading" class="step__heading">Plan options</h2>
+      <p class="step__intro">Pick a pace. Faster isn't automatically better — slower plans are usually easier to actually stick to.</p>
+
+      <div class="plan-grid" id="plan-grid"></div>
     </section>
 
-    <section class="locked-step" aria-disabled="true">
+    <!-- ===================== STEP 4 — MACROS ===================== -->
+    <section class="step" id="step-macros" aria-labelledby="step-macros-heading" hidden>
       <p class="step__eyebrow">Step 4 of 4</p>
-      <h2 class="step__heading">Macro breakdown</h2>
-      <p class="locked-step__note">Protein / carbs / fat targets once a plan is picked.</p>
+      <h2 id="step-macros-heading" class="step__heading">Macro breakdown</h2>
+      <p class="step__intro">Same calorie target, split differently depending on what you're optimizing for.</p>
+
+      <fieldset class="macro-style" id="macro-style-group">
+        <legend class="field__legend">Choose your style</legend>
+
+        <label class="radio-option">
+          <input type="radio" name="macroStyle" value="lean">
+          Lean — losing fat, preserving as much muscle as possible
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="macroStyle" value="leanMuscle">
+          Lean muscle — slow, controlled muscle gain with minimal fat
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="macroStyle" value="bulkMuscle">
+          Bulk muscle — prioritizing muscle and strength gain
+        </label>
+      </fieldset>
+
+      <section class="result-card" id="macro-card" hidden aria-live="polite">
+        <h3 class="result-card__title">Nutrition Facts — Macros</h3>
+        <dl class="result-list" id="macro-list"></dl>
+        <p class="result-footnote" id="macro-explanation"></p>
+      </section>
     </section>
 
   </main>
 
   <footer class="site-footer">
-    <p>Estimates only — not medical advice. Built for MP2, OIM3690.</p>
+    <p>Estimates only — not medical advice. Individual needs vary. Built for MP2, OIM3690.</p>
   </footer>
 
   <script>
-    // ---------- Constants ----------
+    // ============================================================
+    // Constants
+    // ============================================================
 
     const ACTIVITY_MULTIPLIERS = {
       sedentary: 1.2,
@@ -146,25 +207,71 @@
 
     const WORKOUT_BONUS_PER_SESSION = 75; // kcal/day, per weekly training session
     const LB_TO_KG = 0.453592;
+    const KCAL_PER_KG = 7700; // rough energy cost of 1kg of bodyweight change
 
-    // ---------- State ----------
-    // const here only locks the binding, not the contents — we still mutate
-    // state.weightUnit below when the toggle buttons are clicked.
-    const state = {
-      weightUnit: 'kg',
+    // Fixed weekly-rate tiers, as a % of current bodyweight.
+    const WEEKLY_RATE_PERCENT = {
+      conservative: 0.0025,
+      moderate: 0.005,
+      aggressive: 0.01,
     };
 
-    // ---------- DOM references ----------
+    // Rough, commonly-cited daily calorie floors. Used only to flag a plan
+    // for a gentle warning, not as a hard limit.
+    const MIN_SAFE_CALORIES = {
+      male: 1500,
+      female: 1200,
+    };
 
-    const form = document.getElementById('profile-form');
+    // Protein anchored to bodyweight (g/kg); fat held at a flat % of
+    // calories across all three styles per the PRD; carbs take the rest.
+    const PROTEIN_G_PER_KG = {
+      lean: 2.2,
+      leanMuscle: 2.0,
+      bulkMuscle: 1.8,
+    };
+    const FAT_PERCENT_OF_CALORIES = 0.25;
+
+    const MACRO_STYLE_LABELS = {
+      lean: 'Lean',
+      leanMuscle: 'Lean muscle',
+      bulkMuscle: 'Bulk muscle',
+    };
+
+    const MACRO_STYLE_EXPLANATIONS = {
+      lean: 'Higher protein, lower carbs, moderate fat — built to preserve muscle while losing fat as efficiently as possible.',
+      leanMuscle: 'High protein, moderate carbs and fat — steady, controlled muscle gain without much fat.',
+      bulkMuscle: 'High protein, higher carbs, moderate fat — extra fuel for harder training and faster muscle gain.',
+    };
+
+    // ============================================================
+    // State
+    // ============================================================
+    // const only locks the binding — every property below still gets
+    // mutated freely as the user moves through the steps.
+
+    const state = {
+      weightUnit: 'kg',
+      goalType: 'cut',
+      profile: null,
+      maintenanceCalories: null,
+      plans: null,
+      selectedPlanId: null,
+    };
+
+    // ============================================================
+    // DOM references
+    // ============================================================
+
+    const profileForm = document.getElementById('profile-form');
     const weightInput = document.getElementById('weight-input');
     const heightInput = document.getElementById('height-input');
     const ageInput = document.getElementById('age-input');
     const genderSelect = document.getElementById('gender-select');
     const activitySelect = document.getElementById('activity-select');
     const workoutsInput = document.getElementById('workouts-input');
-    const unitButtons = document.querySelectorAll('.unit-toggle__btn');
-    const errorEl = document.getElementById('form-error');
+    const weightUnitButtons = document.querySelectorAll('#weight-unit-toggle .unit-toggle__btn');
+    const formErrorEl = document.getElementById('form-error');
     const resultCard = document.getElementById('result-card');
     const resetBtn = document.getElementById('reset-btn');
 
@@ -174,37 +281,100 @@
     const resultBonusEl = document.getElementById('result-bonus');
     const resultExplanationEl = document.getElementById('result-explanation');
 
-    // ---------- Unit toggle ----------
+    const stepGoal = document.getElementById('step-goal');
+    const goalForm = document.getElementById('goal-form');
+    const goalTypeButtons = document.querySelectorAll('#goal-type-toggle .unit-toggle__btn');
+    const targetWeightInput = document.getElementById('target-weight-input');
+    const targetWeightUnitLabel = document.getElementById('target-weight-unit');
+    const timeframeInput = document.getElementById('timeframe-input');
+    const goalErrorEl = document.getElementById('goal-error');
+
+    const stepPlans = document.getElementById('step-plans');
+    const planGrid = document.getElementById('plan-grid');
+
+    const stepMacros = document.getElementById('step-macros');
+    const macroStyleGroup = document.getElementById('macro-style-group');
+    const macroCard = document.getElementById('macro-card');
+    const macroListEl = document.getElementById('macro-list');
+    const macroExplanationEl = document.getElementById('macro-explanation');
+
+    // ============================================================
+    // Small shared helpers
+    // ============================================================
+
+    function toKg(value, unit) {
+      return unit === 'lb' ? value * LB_TO_KG : value;
+    }
+
+    function fromKg(valueKg, unit) {
+      return unit === 'lb' ? valueKg / LB_TO_KG : valueKg;
+    }
+
+    function isPositiveNumber(value) {
+      return typeof value === 'number' && !Number.isNaN(value) && value > 0;
+    }
+
+    function capitalize(text) {
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    // ============================================================
+    // Toggle controls (weight unit, goal type)
+    // ============================================================
 
     function setWeightUnit(unit) {
       state.weightUnit = unit;
 
-      unitButtons.forEach((btn) => {
+      weightUnitButtons.forEach((btn) => {
         const isActive = btn.dataset.unit === unit;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+
+      if (targetWeightUnitLabel) {
+        targetWeightUnitLabel.textContent = unit;
+      }
+      // A previously typed target weight is now in the wrong unit context.
+      if (targetWeightInput) {
+        targetWeightInput.value = '';
+      }
+    }
+
+    weightUnitButtons.forEach((btn) => {
+      btn.addEventListener('click', () => setWeightUnit(btn.dataset.unit));
+    });
+
+    function setGoalType(type) {
+      state.goalType = type;
+
+      goalTypeButtons.forEach((btn) => {
+        const isActive = btn.dataset.goal === type;
         btn.classList.toggle('is-active', isActive);
         btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       });
     }
 
-    unitButtons.forEach((btn) => {
-      btn.addEventListener('click', () => setWeightUnit(btn.dataset.unit));
+    goalTypeButtons.forEach((btn) => {
+      btn.addEventListener('click', () => setGoalType(btn.dataset.goal));
     });
 
-    // ---------- Error display ----------
+    // ============================================================
+    // Error display
+    // ============================================================
 
-    function showError(message) {
-      errorEl.textContent = message;
-      errorEl.hidden = false;
+    function showError(el, message) {
+      el.textContent = message;
+      el.hidden = false;
     }
 
-    function clearError() {
-      errorEl.hidden = true;
-      errorEl.textContent = '';
+    function clearError(el) {
+      el.hidden = true;
+      el.textContent = '';
     }
 
-    // ---------- Reading + validating input ----------
-    // Every value coming off the form is a string — Number() converts each
-    // one before it touches any math.
+    // ============================================================
+    // STEP 1 — Maintenance calories
+    // ============================================================
 
     function readProfile() {
       return {
@@ -216,10 +386,6 @@
         activityLevel: activitySelect.value,
         workoutsPerWeek: Number(workoutsInput.value),
       };
-    }
-
-    function isPositiveNumber(value) {
-      return typeof value === 'number' && !Number.isNaN(value) && value > 0;
     }
 
     function validateProfile(profile) {
@@ -247,17 +413,13 @@
       return message;
     }
 
-    // ---------- Calculations ----------
-
     function calculateBMR(weightKg, heightCm, age, gender) {
       const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
       return gender === 'male' ? base + 5 : base - 161;
     }
 
     function calculateMaintenance(profile) {
-      const weightKg =
-        profile.weightUnit === 'lb' ? profile.weightValue * LB_TO_KG : profile.weightValue;
-
+      const weightKg = toKg(profile.weightValue, profile.weightUnit);
       const bmr = calculateBMR(weightKg, profile.heightCm, profile.age, profile.gender);
       const multiplier = ACTIVITY_MULTIPLIERS[profile.activityLevel];
       const activityCalories = bmr * multiplier;
@@ -273,9 +435,7 @@
       };
     }
 
-    // ---------- Rendering ----------
-
-    function renderResult(breakdown) {
+    function renderMaintenanceResult(breakdown) {
       resultCaloriesEl.textContent = breakdown.maintenance.toLocaleString();
       resultBmrEl.textContent = `${breakdown.bmr.toLocaleString()} kcal`;
       resultMultiplierEl.textContent = `\u00d7${breakdown.multiplier.toFixed(2)}`;
@@ -294,34 +454,324 @@
       resultCard.hidden = false;
     }
 
-    // ---------- Events ----------
-
-    form.addEventListener('submit', (event) => {
+    profileForm.addEventListener('submit', (event) => {
       event.preventDefault();
-      clearError();
+      clearError(formErrorEl);
 
       const profile = readProfile();
       const validationMessage = validateProfile(profile);
 
       if (validationMessage) {
-        showError(validationMessage);
+        showError(formErrorEl, validationMessage);
         resultCard.hidden = true;
         return;
       }
 
       const breakdown = calculateMaintenance(profile);
-      renderResult(breakdown);
+      state.profile = profile;
+      state.maintenanceCalories = breakdown.maintenance;
+
+      renderMaintenanceResult(breakdown);
+
+      // Recalculating Step 1 invalidates anything downstream that was
+      // built from the old number, so those steps reset rather than
+      // silently going stale.
+      stepGoal.hidden = false;
+      stepPlans.hidden = true;
+      stepMacros.hidden = true;
+      planGrid.innerHTML = '';
+      macroCard.hidden = true;
+      state.plans = null;
+      state.selectedPlanId = null;
     });
+
+    // ============================================================
+    // STEP 2 — Goal
+    // ============================================================
+
+    function readGoal() {
+      return {
+        goalType: state.goalType,
+        targetWeightValue: Number(targetWeightInput.value),
+        timeframeWeeks: Number(timeframeInput.value),
+      };
+    }
+
+    function validateGoal(goal, currentWeightSameUnit) {
+      let message = null;
+
+      if (!isPositiveNumber(goal.targetWeightValue)) {
+        message = 'Enter a target weight greater than 0.';
+      } else if (!isPositiveNumber(goal.timeframeWeeks) || goal.timeframeWeeks > 104) {
+        message = 'Enter a timeframe between 1 and 104 weeks.';
+      } else if (goal.goalType === 'cut' && goal.targetWeightValue >= currentWeightSameUnit) {
+        message = 'For a cut, your target weight should be lower than your current weight.';
+      } else if (goal.goalType === 'bulk' && goal.targetWeightValue <= currentWeightSameUnit) {
+        message = 'For a bulk, your target weight should be higher than your current weight.';
+      }
+
+      return message;
+    }
+
+    // ============================================================
+    // STEP 3 — Plan options
+    // ============================================================
+
+    function buildPlanWarning({ weeklyRateKg, currentWeightKg, planCalories, gender, goalType }) {
+      const weeklyRatePercent = currentWeightKg > 0 ? weeklyRateKg / currentWeightKg : 0;
+      const minSafe = gender === 'male' ? MIN_SAFE_CALORIES.male : MIN_SAFE_CALORIES.female;
+
+      if (goalType === 'cut' && planCalories < minSafe) {
+        return `This drops below ${minSafe.toLocaleString()} kcal/day, a commonly used floor — a slower rate is worth considering.`;
+      }
+      if (weeklyRatePercent > 0.01) {
+        return `This works out to over 1% of your bodyweight per week — faster than what's generally considered sustainable.`;
+      }
+      return null;
+    }
+
+    function buildPlan(id, label, weeklyRatePercentOverride, profile, goal, maintenanceCalories) {
+      const currentWeightKg = toKg(profile.weightValue, profile.weightUnit);
+      const targetWeightKg = toKg(goal.targetWeightValue, profile.weightUnit);
+      const totalChangeKg = Math.abs(targetWeightKg - currentWeightKg);
+
+      const weeklyRateKg =
+        weeklyRatePercentOverride === null
+          ? goal.timeframeWeeks > 0
+            ? totalChangeKg / goal.timeframeWeeks
+            : 0
+          : weeklyRatePercentOverride * currentWeightKg;
+
+      const dailyAdjustment = (weeklyRateKg * KCAL_PER_KG) / 7;
+      const signedAdjustment = goal.goalType === 'cut' ? -dailyAdjustment : dailyAdjustment;
+      const planCalories = Math.round(maintenanceCalories + signedAdjustment);
+      const weeksToGoal = weeklyRateKg > 0 ? Math.ceil(totalChangeKg / weeklyRateKg) : 0;
+      const rateDisplay = fromKg(weeklyRateKg, profile.weightUnit);
+      const ratePercent = currentWeightKg > 0 ? (weeklyRateKg / currentWeightKg) * 100 : 0;
+
+      return {
+        id,
+        label,
+        calories: planCalories,
+        dailyAdjustment: Math.round(dailyAdjustment),
+        weeksToGoal,
+        rateDisplay,
+        ratePercent,
+        warning: buildPlanWarning({
+          weeklyRateKg,
+          currentWeightKg,
+          planCalories,
+          gender: profile.gender,
+          goalType: goal.goalType,
+        }),
+      };
+    }
+
+    function renderPlans(plans, weightUnit) {
+      planGrid.innerHTML = '';
+
+      plans.forEach((plan) => {
+        const card = document.createElement('article');
+        card.className = 'plan-card';
+        card.dataset.planId = plan.id;
+
+        const verb = state.goalType === 'cut' ? 'loss' : 'gain';
+
+        card.innerHTML = `
+          <h3 class="plan-card__title">${plan.label}</h3>
+          <p class="plan-card__rate">${plan.ratePercent.toFixed(2)}%/week (${plan.rateDisplay.toFixed(2)} ${weightUnit}/week ${verb})</p>
+          <dl class="result-list plan-card__stats">
+            <dt>Calories</dt>
+            <dd>${plan.calories.toLocaleString()} kcal/day</dd>
+            <dt>Daily change</dt>
+            <dd>${plan.dailyAdjustment >= 0 ? '+' : ''}${plan.dailyAdjustment.toLocaleString()} kcal</dd>
+            <dt>Est. time to goal</dt>
+            <dd>${plan.weeksToGoal} weeks</dd>
+          </dl>
+          ${plan.warning ? `<p class="plan-card__warning">${plan.warning}</p>` : ''}
+          <button type="button" class="btn btn--ghost plan-card__select">Use this plan</button>
+        `;
+
+        planGrid.appendChild(card);
+      });
+    }
+
+    function highlightSelectedPlan() {
+      const cards = planGrid.querySelectorAll('.plan-card');
+      cards.forEach((card) => {
+        const isSelected = card.dataset.planId === state.selectedPlanId;
+        card.classList.toggle('is-selected', isSelected);
+        const btn = card.querySelector('.plan-card__select');
+        btn.textContent = isSelected ? 'Selected' : 'Use this plan';
+      });
+    }
+
+    planGrid.addEventListener('click', (event) => {
+      const btn = event.target.closest('.plan-card__select');
+      if (!btn) return;
+
+      const card = btn.closest('.plan-card');
+      state.selectedPlanId = card.dataset.planId;
+      highlightSelectedPlan();
+
+      stepMacros.hidden = false;
+      // Switching plans invalidates any macro breakdown already shown.
+      macroCard.hidden = true;
+      const checkedRadio = macroStyleGroup.querySelector('input[name="macroStyle"]:checked');
+      if (checkedRadio) {
+        renderMacrosForCurrentSelection();
+      }
+    });
+
+    goalForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      clearError(goalErrorEl);
+
+      const goal = readGoal();
+      const validationMessage = validateGoal(goal, state.profile.weightValue);
+
+      if (validationMessage) {
+        showError(goalErrorEl, validationMessage);
+        stepPlans.hidden = true;
+        return;
+      }
+
+      const plans = [
+        buildPlan('custom', 'Your timeframe', null, state.profile, goal, state.maintenanceCalories),
+        buildPlan(
+          'conservative',
+          'Conservative',
+          WEEKLY_RATE_PERCENT.conservative,
+          state.profile,
+          goal,
+          state.maintenanceCalories
+        ),
+        buildPlan(
+          'moderate',
+          'Moderate',
+          WEEKLY_RATE_PERCENT.moderate,
+          state.profile,
+          goal,
+          state.maintenanceCalories
+        ),
+        buildPlan(
+          'aggressive',
+          'Aggressive',
+          WEEKLY_RATE_PERCENT.aggressive,
+          state.profile,
+          goal,
+          state.maintenanceCalories
+        ),
+      ];
+
+      state.plans = plans;
+      state.selectedPlanId = null;
+
+      renderPlans(plans, state.profile.weightUnit);
+      stepPlans.hidden = false;
+
+      // A fresh plan list means any previously selected plan no longer
+      // applies, so the macro step resets too.
+      stepMacros.hidden = true;
+      macroCard.hidden = true;
+      const checkedRadio = macroStyleGroup.querySelector('input[name="macroStyle"]:checked');
+      if (checkedRadio) checkedRadio.checked = false;
+    });
+
+    // ============================================================
+    // STEP 4 — Macro breakdown
+    // ============================================================
+
+    function computeMacros(planCalories, bodyWeightKg, style) {
+      const proteinG = Math.round(PROTEIN_G_PER_KG[style] * bodyWeightKg);
+      const proteinKcal = proteinG * 4;
+      const fatKcal = planCalories * FAT_PERCENT_OF_CALORIES;
+      const fatG = Math.round(fatKcal / 9);
+      const remainingKcal = planCalories - proteinKcal - fatKcal;
+      const carbKcal = Math.max(remainingKcal, 0);
+      const carbG = Math.round(carbKcal / 4);
+
+      return {
+        proteinG,
+        proteinKcal: Math.round(proteinKcal),
+        fatG,
+        fatKcal: Math.round(fatKcal),
+        carbG,
+        carbKcal: Math.round(carbKcal),
+        isTight: remainingKcal < 0,
+      };
+    }
+
+    function renderMacros(macros, style) {
+      macroListEl.innerHTML = `
+        <dt>Protein</dt>
+        <dd>${macros.proteinG}g (${macros.proteinKcal.toLocaleString()} kcal)</dd>
+        <dt>Carbs</dt>
+        <dd>${macros.carbG}g (${macros.carbKcal.toLocaleString()} kcal)</dd>
+        <dt>Fat</dt>
+        <dd>${macros.fatG}g (${macros.fatKcal.toLocaleString()} kcal)</dd>
+      `;
+
+      const tightNote = macros.isTight
+        ? ' This plan\u2019s calorie target is tight for this protein and fat level, so carbs are floored at 0g — a less aggressive plan or different style would give more room.'
+        : '';
+
+      macroExplanationEl.textContent = `${MACRO_STYLE_EXPLANATIONS[style]}${tightNote}`;
+
+      macroCard.hidden = false;
+    }
+
+    function renderMacrosForCurrentSelection() {
+      const checkedRadio = macroStyleGroup.querySelector('input[name="macroStyle"]:checked');
+      if (!checkedRadio || !state.selectedPlanId || !state.plans) return;
+
+      const selectedPlan = state.plans.find((plan) => plan.id === state.selectedPlanId);
+      if (!selectedPlan) return;
+
+      const bodyWeightKg = toKg(state.profile.weightValue, state.profile.weightUnit);
+      const macros = computeMacros(selectedPlan.calories, bodyWeightKg, checkedRadio.value);
+      renderMacros(macros, checkedRadio.value);
+    }
+
+    macroStyleGroup.addEventListener('change', (event) => {
+      if (event.target.name !== 'macroStyle') return;
+      renderMacrosForCurrentSelection();
+    });
+
+    // ============================================================
+    // Reset everything
+    // ============================================================
 
     resetBtn.addEventListener('click', () => {
-      form.reset();
+      profileForm.reset();
+      goalForm.reset();
+
       setWeightUnit('kg');
-      clearError();
+      setGoalType('cut');
+
+      clearError(formErrorEl);
+      clearError(goalErrorEl);
+
       resultCard.hidden = true;
+      stepGoal.hidden = true;
+      stepPlans.hidden = true;
+      stepMacros.hidden = true;
+
+      planGrid.innerHTML = '';
+      macroCard.hidden = true;
+
+      state.profile = null;
+      state.maintenanceCalories = null;
+      state.plans = null;
+      state.selectedPlanId = null;
     });
 
-    // Initialize default unit state on load
+    // ============================================================
+    // Initialize default toggle states on load
+    // ============================================================
+
     setWeightUnit('kg');
+    setGoalType('cut');
   </script>
 </body>
 </html>

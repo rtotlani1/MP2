@@ -31,6 +31,13 @@ fieldset {
   padding: 0;
 }
 
+legend {
+  padding: 0;
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -68,14 +75,18 @@ fieldset {
 
 .site-header__tagline {
   color: var(--muted);
-  margin: 0;
+  margin: 0 0 1rem;
   max-width: 32rem;
+}
+
+.site-header__reset {
+  font-size: 0.85rem;
+  padding: 0.45rem 0.9rem;
 }
 
 /* ---------- Steps ---------- */
 
 .step,
-.locked-step,
 .result-card {
   margin-bottom: 1.75rem;
 }
@@ -127,6 +138,11 @@ fieldset {
   font-size: 0.9rem;
 }
 
+.field__legend {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .field input,
 .field select {
   font: inherit;
@@ -140,7 +156,8 @@ fieldset {
 .field input:focus,
 .field select:focus,
 .btn:focus-visible,
-.unit-toggle__btn:focus-visible {
+.unit-toggle__btn:focus-visible,
+.radio-option input:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 1px;
 }
@@ -179,12 +196,14 @@ fieldset {
   border: 1.5px solid var(--ink);
   border-radius: var(--radius);
   overflow: hidden;
+  width: fit-content;
 }
 
 .unit-toggle__btn {
   font: inherit;
   font-size: 0.85rem;
   padding: 0 0.85rem;
+  height: 2.4rem;
   border: none;
   background: #fff;
   color: var(--ink);
@@ -288,8 +307,8 @@ fieldset {
   font-weight: 700;
 }
 
-/* Every pair after the first (BMR, multiplier, training bonus)
-   reads as supporting detail rather than the headline number. */
+/* Every pair after the first reads as supporting detail rather than
+   the headline number. */
 .result-list dt:nth-of-type(n + 2),
 .result-list dd:nth-of-type(n + 2) {
   border-bottom: 1px dashed #b9b3a0;
@@ -314,19 +333,86 @@ fieldset {
   margin: 0.85rem 0 0;
 }
 
-/* ---------- Locked steps ---------- */
+/* ---------- Plan cards (Step 3) ---------- */
 
-.locked-step {
-  border: 1.5px dashed #c7c2b3;
-  border-radius: var(--radius);
-  padding: 1.25rem 1.5rem;
-  opacity: 0.6;
+.plan-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
 }
 
-.locked-step__note {
-  margin: 0;
-  font-size: 0.9rem;
+@media (min-width: 640px) {
+  .plan-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.plan-card {
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  background: #fff;
+}
+
+.plan-card.is-selected {
+  border-width: 3px;
+  background: var(--highlight);
+}
+
+.plan-card__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+}
+
+.plan-card__rate {
+  font-size: 0.8rem;
   color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.plan-card__stats {
+  margin-bottom: 0.75rem;
+}
+
+.plan-card__stats dt,
+.plan-card__stats dd {
+  font-size: 0.85rem;
+  padding: 0.35rem 0;
+}
+
+.plan-card__warning {
+  font-size: 0.8rem;
+  color: var(--accent-warn);
+  margin: 0 0 0.75rem;
+}
+
+.plan-card__select {
+  width: 100%;
+}
+
+/* ---------- Macro style picker (Step 4) ---------- */
+
+.macro-style {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.radio-option input {
+  margin-top: 0.2rem;
+  accent-color: var(--accent);
 }
 
 /* ---------- Footer ---------- */
