@@ -318,6 +318,17 @@
       return text.charAt(0).toUpperCase() + text.slice(1);
     }
 
+    // Plain for-loop search instead of array.find() — same result,
+    // built only from things covered in class (for, if, return).
+    function findPlanById(plans, id) {
+      for (let i = 0; i < plans.length; i++) {
+        if (plans[i].id === id) {
+          return plans[i];
+        }
+      }
+      return null;
+    }
+
     // ============================================================
     // Toggle controls (weight unit, goal type)
     // ============================================================
@@ -459,15 +470,18 @@
       clearError(formErrorEl);
 
       const profile = readProfile();
+      console.log('Profile entered:', profile);
       const validationMessage = validateProfile(profile);
 
       if (validationMessage) {
+        console.log('Profile validation failed:', validationMessage);
         showError(formErrorEl, validationMessage);
         resultCard.hidden = true;
         return;
       }
 
       const breakdown = calculateMaintenance(profile);
+      console.log('Maintenance breakdown:', breakdown);
       state.profile = profile;
       state.maintenanceCalories = breakdown.maintenance;
 
@@ -517,7 +531,7 @@
     // STEP 3 — Plan options
     // ============================================================
 
-    function buildPlanWarning({ weeklyRateKg, currentWeightKg, planCalories, gender, goalType }) {
+    function buildPlanWarning(weeklyRateKg, currentWeightKg, planCalories, gender, goalType) {
       const weeklyRatePercent = currentWeightKg > 0 ? weeklyRateKg / currentWeightKg : 0;
       const minSafe = gender === 'male' ? MIN_SAFE_CALORIES.male : MIN_SAFE_CALORIES.female;
 
@@ -557,13 +571,7 @@
         weeksToGoal,
         rateDisplay,
         ratePercent,
-        warning: buildPlanWarning({
-          weeklyRateKg,
-          currentWeightKg,
-          planCalories,
-          gender: profile.gender,
-          goalType: goal.goalType,
-        }),
+        warning: buildPlanWarning(weeklyRateKg, currentWeightKg, planCalories, profile.gender, goal.goalType),
       };
     }
 
@@ -593,6 +601,23 @@
         `;
 
         planGrid.appendChild(card);
+
+        // Attach the click listener directly to this card's button right
+        // after creating it, instead of listening on the whole grid and
+        // figuring out afterward which card was clicked.
+        const selectBtn = card.querySelector('.plan-card__select');
+        selectBtn.addEventListener('click', () => {
+          console.log('Plan selected:', plan.id);
+          state.selectedPlanId = plan.id;
+          highlightSelectedPlan();
+
+          stepMacros.hidden = false;
+          macroCard.hidden = true;
+          const checkedRadio = macroStyleGroup.querySelector('input[name="macroStyle"]:checked');
+          if (checkedRadio) {
+            renderMacrosForCurrentSelection();
+          }
+        });
       });
     }
 
@@ -606,31 +631,16 @@
       });
     }
 
-    planGrid.addEventListener('click', (event) => {
-      const btn = event.target.closest('.plan-card__select');
-      if (!btn) return;
-
-      const card = btn.closest('.plan-card');
-      state.selectedPlanId = card.dataset.planId;
-      highlightSelectedPlan();
-
-      stepMacros.hidden = false;
-      // Switching plans invalidates any macro breakdown already shown.
-      macroCard.hidden = true;
-      const checkedRadio = macroStyleGroup.querySelector('input[name="macroStyle"]:checked');
-      if (checkedRadio) {
-        renderMacrosForCurrentSelection();
-      }
-    });
-
     goalForm.addEventListener('submit', (event) => {
       event.preventDefault();
       clearError(goalErrorEl);
 
       const goal = readGoal();
+      console.log('Goal entered:', goal);
       const validationMessage = validateGoal(goal, state.profile.weightValue);
 
       if (validationMessage) {
+        console.log('Goal validation failed:', validationMessage);
         showError(goalErrorEl, validationMessage);
         stepPlans.hidden = true;
         return;
@@ -663,6 +673,8 @@
           state.maintenanceCalories
         ),
       ];
+
+      console.log('Plans built:', plans);
 
       state.plans = plans;
       state.selectedPlanId = null;
@@ -725,11 +737,13 @@
       const checkedRadio = macroStyleGroup.querySelector('input[name="macroStyle"]:checked');
       if (!checkedRadio || !state.selectedPlanId || !state.plans) return;
 
-      const selectedPlan = state.plans.find((plan) => plan.id === state.selectedPlanId);
+      const selectedPlan = findPlanById(state.plans, state.selectedPlanId);
       if (!selectedPlan) return;
 
       const bodyWeightKg = toKg(state.profile.weightValue, state.profile.weightUnit);
       const macros = computeMacros(selectedPlan.calories, bodyWeightKg, checkedRadio.value);
+      console.log('Macro style chosen:', checkedRadio.value);
+      console.log('Macros computed:', macros);
       renderMacros(macros, checkedRadio.value);
     }
 
@@ -743,6 +757,7 @@
     // ============================================================
 
     resetBtn.addEventListener('click', () => {
+      console.log('Resetting everything');
       profileForm.reset();
       goalForm.reset();
 
