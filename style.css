@@ -423,8 +423,77 @@ legend {
   color: var(--muted);
 }
 
+.site-footer__formulas {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+  }
+}
+
+/* ---------- Small-screen refinements ----------
+   The layout is already mobile-first (single column by default,
+   upgrading at 600px/640px). These tighten things up further for
+   actual phone-sized screens: bigger tap targets, less wasted
+   padding, and the weight field stacking instead of squeezing. */
+
+@media (max-width: 480px) {
+  body {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .site-header__title {
+    font-size: 2rem;
+  }
+
+  .site-header__tagline {
+    max-width: none;
+  }
+
+  .step__intro {
+    max-width: none;
+  }
+
+  /* Full-width primary actions are easier to tap than small buttons
+     floating on the left. */
+  .step__actions .btn {
+    width: 100%;
+  }
+
+  .unit-toggle__btn {
+    height: 2.75rem;
+    padding: 0 1rem;
+  }
+
+  .result-list__main {
+    font-size: 1.5rem;
+  }
+
+  .plan-card {
+    padding: 1rem;
+  }
+
+  .radio-option {
+    padding: 0.3rem 0;
+  }
+}
+
+@media (max-width: 380px) {
+  /* On the narrowest phones, side-by-side weight input + unit toggle
+     gets too tight — stack them instead. */
+  .field--weight {
+    grid-template-columns: 1fr;
+  }
+
+  .field--weight .unit-toggle {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .field--weight .unit-toggle__btn {
+    flex: 1;
   }
 }
