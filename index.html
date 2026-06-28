@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fuel Ledger — Maintenance Calorie &amp; Macro Planner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <p class="site-header__eyebrow">Step-by-step nutrition planning</p>
+    <h1 class="site-header__title">Fuel Ledger</h1>
+    <p class="site-header__tagline">Figure out what to eat for your goal, without redoing the math by hand every time something changes.</p>
+  </header>
+
+  <main>
+
+    <section class="step" id="step-profile" aria-labelledby="step-profile-heading">
+      <p class="step__eyebrow">Step 1 of 4</p>
+      <h2 id="step-profile-heading" class="step__heading">Your profile</h2>
+      <p class="step__intro">This gives us your maintenance calories — what it takes to hold your current weight steady.</p>
+
+      <form id="profile-form" novalidate>
+        <fieldset class="field-grid">
+          <legend class="sr-only">Your profile details</legend>
+
+          <div class="field field--weight">
+            <label for="weight-input">Weight</label>
+            <input type="number" id="weight-input" name="weight" min="1" step="0.1" inputmode="decimal" required>
+            <fieldset class="unit-toggle">
+              <legend class="sr-only">Weight unit</legend>
+              <button type="button" class="unit-toggle__btn is-active" data-unit="kg" aria-pressed="true">kg</button>
+              <button type="button" class="unit-toggle__btn" data-unit="lb" aria-pressed="false">lb</button>
+            </fieldset>
+          </div>
+
+          <div class="field">
+            <label for="height-input">Height (cm)</label>
+            <input type="number" id="height-input" name="height" min="1" step="0.1" inputmode="decimal" required>
+          </div>
+
+          <div class="field">
+            <label for="age-input">Age</label>
+            <input type="number" id="age-input" name="age" min="13" max="100" step="1" inputmode="numeric" required>
+          </div>
+
+          <div class="field">
+            <label for="gender-select">Gender</label>
+            <select id="gender-select" name="gender" aria-describedby="gender-note" required>
+              <option value="" disabled selected>Select...</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            <p class="field__note" id="gender-note">The formula has separate male/female terms — either way, treat the result as a starting estimate.</p>
+          </div>
+
+          <div class="field">
+            <label for="activity-select">Daily activity level</label>
+            <select id="activity-select" name="activity" required>
+              <option value="" disabled selected>Select...</option>
+              <option value="sedentary">Sedentary — desk job, mostly sitting</option>
+              <option value="light">Lightly active — on your feet sometimes</option>
+              <option value="moderate">Moderately active — physically active routine</option>
+              <option value="active">Very active — physically demanding day-to-day</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="workouts-input">Workout sessions / week</label>
+            <input type="number" id="workouts-input" name="workouts" min="0" max="14" step="1" inputmode="numeric" aria-describedby="workouts-note" required>
+            <p class="field__note" id="workouts-note">Dedicated training sessions, separate from the daily activity level above.</p>
+          </div>
+
+        </fieldset>
+
+        <p class="form-error" id="form-error" role="alert" hidden></p>
+
+        <div class="step__actions">
+          <button type="submit" class="btn btn--primary">Calculate maintenance calories</button>
+          <button type="button" class="btn btn--ghost" id="reset-btn">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="result-card" id="result-card" hidden aria-live="polite">
+      <p class="result-card__title">Nutrition Facts — Maintenance</p>
+
+      <dl class="result-list">
+        <dt>Maintenance Calories</dt>
+        <dd class="result-list__main"><span id="result-calories">0</span> <span class="result-row__unit">kcal/day</span></dd>
+
+        <dt>Base metabolic rate (BMR)</dt>
+        <dd id="result-bmr" class="result-row__mono">0 kcal</dd>
+
+        <dt>Activity multiplier</dt>
+        <dd id="result-multiplier" class="result-row__mono">×0.00</dd>
+
+        <dt>Training bonus</dt>
+        <dd id="result-bonus" class="result-row__mono">+0 kcal</dd>
+      </dl>
+
+      <p class="result-footnote" id="result-explanation"></p>
+    </section>
+
+    <section class="locked-step" aria-disabled="true">
+      <p class="step__eyebrow">Step 2 of 4</p>
+      <h2 class="step__heading">Your goal</h2>
+      <p class="locked-step__note">Target weight, timeframe, and bulk/cut — coming in the next iteration.</p>
+    </section>
+
+    <section class="locked-step" aria-disabled="true">
+      <p class="step__eyebrow">Step 3 of 4</p>
+      <h2 class="step__heading">Plan options</h2>
+      <p class="locked-step__note">Conservative / moderate / aggressive comparison goes here.</p>
+    </section>
+
+    <section class="locked-step" aria-disabled="true">
+      <p class="step__eyebrow">Step 4 of 4</p>
+      <h2 class="step__heading">Macro breakdown</h2>
+      <p class="locked-step__note">Protein / carbs / fat targets once a plan is picked.</p>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Estimates only — not medical advice. Built for MP2, OIM3690.</p>
+  </footer>
+
+  <script>
+    // ---------- Constants ----------
+
+    const ACTIVITY_MULTIPLIERS = {
+      sedentary: 1.2,
+      light: 1.3,
+      moderate: 1.4,
+      active: 1.5,
+    };
+
+    const ACTIVITY_LABELS = {
+      sedentary: 'sedentary',
+      light: 'lightly active',
+      moderate: 'moderately active',
+      active: 'very active',
+    };
+
+    const WORKOUT_BONUS_PER_SESSION = 75; // kcal/day, per weekly training session
+    const LB_TO_KG = 0.453592;
+
+    // ---------- State ----------
+    // const here only locks the binding, not the contents — we still mutate
+    // state.weightUnit below when the toggle buttons are clicked.
+    const state = {
+      weightUnit: 'kg',
+    };
+
+    // ---------- DOM references ----------
+
+    const form = document.getElementById('profile-form');
+    const weightInput = document.getElementById('weight-input');
+    const heightInput = document.getElementById('height-input');
+    const ageInput = document.getElementById('age-input');
+    const genderSelect = document.getElementById('gender-select');
+    const activitySelect = document.getElementById('activity-select');
+    const workoutsInput = document.getElementById('workouts-input');
+    const unitButtons = document.querySelectorAll('.unit-toggle__btn');
+    const errorEl = document.getElementById('form-error');
+    const resultCard = document.getElementById('result-card');
+    const resetBtn = document.getElementById('reset-btn');
+
+    const resultCaloriesEl = document.getElementById('result-calories');
+    const resultBmrEl = document.getElementById('result-bmr');
+    const resultMultiplierEl = document.getElementById('result-multiplier');
+    const resultBonusEl = document.getElementById('result-bonus');
+    const resultExplanationEl = document.getElementById('result-explanation');
+
+    // ---------- Unit toggle ----------
+
+    function setWeightUnit(unit) {
+      state.weightUnit = unit;
+
+      unitButtons.forEach((btn) => {
+        const isActive = btn.dataset.unit === unit;
+        btn.classList.toggle('is-active', isActive);
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      });
+    }
+
+    unitButtons.forEach((btn) => {
+      btn.addEventListener('click', () => setWeightUnit(btn.dataset.unit));
+    });
+
+    // ---------- Error display ----------
+
+    function showError(message) {
+      errorEl.textContent = message;
+      errorEl.hidden = false;
+    }
+
+    function clearError() {
+      errorEl.hidden = true;
+      errorEl.textContent = '';
+    }
+
+    // ---------- Reading + validating input ----------
+    // Every value coming off the form is a string — Number() converts each
+    // one before it touches any math.
+
+    function readProfile() {
+      return {
+        weightValue: Number(weightInput.value),
+        weightUnit: state.weightUnit,
+        heightCm: Number(heightInput.value),
+        age: Number(ageInput.value),
+        gender: genderSelect.value,
+        activityLevel: activitySelect.value,
+        workoutsPerWeek: Number(workoutsInput.value),
+      };
+    }
+
+    function isPositiveNumber(value) {
+      return typeof value === 'number' && !Number.isNaN(value) && value > 0;
+    }
+
+    function validateProfile(profile) {
+      let message = null;
+
+      if (!isPositiveNumber(profile.weightValue)) {
+        message = 'Enter a weight greater than 0.';
+      } else if (!isPositiveNumber(profile.heightCm)) {
+        message = 'Enter a height greater than 0.';
+      } else if (!isPositiveNumber(profile.age)) {
+        message = 'Enter a valid age.';
+      } else if (!profile.gender) {
+        // genderSelect.value is "" (a falsy string) until the user picks one
+        message = 'Select a gender.';
+      } else if (!profile.activityLevel) {
+        message = 'Select your daily activity level.';
+      } else if (
+        profile.workoutsPerWeek < 0 ||
+        profile.workoutsPerWeek > 14 ||
+        Number.isNaN(profile.workoutsPerWeek)
+      ) {
+        message = 'Workout sessions per week should be between 0 and 14.';
+      }
+
+      return message;
+    }
+
+    // ---------- Calculations ----------
+
+    function calculateBMR(weightKg, heightCm, age, gender) {
+      const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
+      return gender === 'male' ? base + 5 : base - 161;
+    }
+
+    function calculateMaintenance(profile) {
+      const weightKg =
+        profile.weightUnit === 'lb' ? profile.weightValue * LB_TO_KG : profile.weightValue;
+
+      const bmr = calculateBMR(weightKg, profile.heightCm, profile.age, profile.gender);
+      const multiplier = ACTIVITY_MULTIPLIERS[profile.activityLevel];
+      const activityCalories = bmr * multiplier;
+      const workoutBonus = profile.workoutsPerWeek * WORKOUT_BONUS_PER_SESSION;
+      const maintenance = activityCalories + workoutBonus;
+
+      return {
+        bmr: Math.round(bmr),
+        multiplier,
+        activityLabel: ACTIVITY_LABELS[profile.activityLevel],
+        workoutBonus: Math.round(workoutBonus),
+        maintenance: Math.round(maintenance),
+      };
+    }
+
+    // ---------- Rendering ----------
+
+    function renderResult(breakdown) {
+      resultCaloriesEl.textContent = breakdown.maintenance.toLocaleString();
+      resultBmrEl.textContent = `${breakdown.bmr.toLocaleString()} kcal`;
+      resultMultiplierEl.textContent = `\u00d7${breakdown.multiplier.toFixed(2)}`;
+      resultBonusEl.textContent = `+${breakdown.workoutBonus.toLocaleString()} kcal`;
+
+      const workoutsNote =
+        breakdown.workoutBonus > 0
+          ? ` plus about ${breakdown.workoutBonus} kcal/day for your weekly training`
+          : '';
+
+      resultExplanationEl.textContent =
+        `Based on the Mifflin-St Jeor formula for your stats, adjusted for a ` +
+        `${breakdown.activityLabel} lifestyle (\u00d7${breakdown.multiplier.toFixed(2)})${workoutsNote}. ` +
+        `Eating around this number should hold your weight roughly steady.`;
+
+      resultCard.hidden = false;
+    }
+
+    // ---------- Events ----------
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      clearError();
+
+      const profile = readProfile();
+      const validationMessage = validateProfile(profile);
+
+      if (validationMessage) {
+        showError(validationMessage);
+        resultCard.hidden = true;
+        return;
+      }
+
+      const breakdown = calculateMaintenance(profile);
+      renderResult(breakdown);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      form.reset();
+      setWeightUnit('kg');
+      clearError();
+      resultCard.hidden = true;
+    });
+
+    // Initialize default unit state on load
+    setWeightUnit('kg');
+  </script>
+</body>
+</html>
