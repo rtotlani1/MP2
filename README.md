@@ -1,6 +1,8 @@
 # MP2
 Mini Project 2 for OIM3690 Summer 2026
 
+- [Mini Project 2](https://rtotlani1.github.io/MP2/)
+
 # Fuel Ledger
 
 A step-by-step nutrition planner: enter your stats, pick a goal, compare a few paces, get a macro breakdown. All calculated live in the browser, vanilla JS only.
